@@ -33,9 +33,8 @@ CREATE TABLE "passkey_credentials" (
 CREATE TABLE "polls" (
   "id" uuid PRIMARY KEY,
   "title" varchar(255) NOT NULL,
-  "body" varchar(255),
   "user_id" uuid NOT NULL,
-  "status" poll_status,
+  "status" poll_status DEFAULT ('OPEN'),
   "created_at" timestamp DEFAULT (now()),
   "expires_at" timestamp DEFAULT (now() + interval '2 days')
 );
@@ -43,7 +42,7 @@ CREATE TABLE "polls" (
 CREATE TABLE "options" (
   "id" uuid PRIMARY KEY,
   "title" varchar(255),
-  "poll_id" uuid NOT NULL
+  "poll_id" uuid NOT NULL,
 );
 
 CREATE TABLE "votes" (

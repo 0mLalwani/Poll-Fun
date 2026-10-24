@@ -1,4 +1,5 @@
 "use server";
+import { getJWT, verifyJWT } from "@/lib/authorization";
 import {
     CredentialModel,
     getCredentials,
@@ -12,8 +13,12 @@ import {
     PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function login(username: string | null) {
+    const token_cookie = (await cookies()).get("jwt_token")?.value;
+    const verifiedToken = await verifyJWT(token_cookie as string);
+    if (verifiedToken.auth) redirect("/");
     try {
         if (!username?.trim()) return "Sorry you must enter something";
         const user = await getUser(username);
@@ -64,7 +69,9 @@ export async function login(username: string | null) {
             options
         );
         const cookieStore = await cookies();
-        cookieStore.set("login_challenge", options.challenge);
+        cookieStore.set("login_challenge", options.challenge, {
+            maxAge: 3600,
+        });
 
         return options;
     } catch (err) {
@@ -105,6 +112,13 @@ export async function verifyAuth(
                 counter: passkey.counter,
                 transports: passkey.transports,
             },
+        });
+        const token = await getJWT(username);
+        console.log("HERE'S THE JWT GNG: ", token);
+
+        cookieStore.set("jwt_token", token, {
+            httpOnly: true,
+            maxAge: 86400 * 7,
         });
         return verification;
     } catch (err) {

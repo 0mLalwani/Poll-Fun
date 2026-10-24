@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import QueryProvider from "@/components/query-provider";
 
 const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" });
 
@@ -31,7 +32,9 @@ export default function RootLayout({
             )}
         >
             <body>
-                <ThemeProvider>{children}</ThemeProvider>
+                {/* <ThemeProvider>
+                    </ThemeProvider> */}
+                <QueryProvider>{children}</QueryProvider>
             </body>
         </html>
     );

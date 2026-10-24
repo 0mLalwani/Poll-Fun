@@ -22,6 +22,14 @@ export const getUser = async (username: string) => {
     ]);
     return resp;
 };
+export const getUserById = async (userId: UUID) => {
+    const resp = await connPool.query(
+        `SELECT * FROM users
+        WHERE id = $1`,
+        [userId]
+    );
+    return resp.rows[0];
+};
 export const createUser = async (username: string) => {
     const resp = await connPool.query(
         "INSERT INTO users (id, username) VALUES ($1, $2)",
@@ -87,4 +95,64 @@ export const createPasskey = async (passkey: CredentialModel) => {
         ]
     );
     return resp;
+};
+
+export const getPollById = async (poll_uuid: UUID) => {
+    const resp = await connPool.query(
+        `
+            SELECT * FROM polls WHERE id = $1`,
+        [poll_uuid]
+    );
+    return resp;
+};
+export const getPolls = async () => {
+    const resp = await connPool.query(`SELECT * FROM polls`);
+    return resp.rows;
+};
+// export const getOptionsById = async (poll_uuid: UUID) => {
+//     const resp = await connPool.query(
+//         `SELECT * FROM options
+//         WHERE poll_id = $1`,
+//         [poll_uuid]
+//     );
+//     return resp.rows;
+// };
+
+export const submitVote = async (
+    user_id: string,
+    poll_id: string,
+    option_id: string
+) => {
+    const resp = await connPool.query(
+        `
+        INSERT INTO votes (user_id, poll_id, option_id)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, poll_id)
+        DO UPDATE SET
+            option_id = EXCLUDED.option_id,
+            created_at = NOW()
+        RETURNING *`,
+        [user_id, poll_id, option_id]
+    );
+    return resp.rowCount;
+};
+// export const getVotesByPollId = async (poll_id: string) => {
+//     const resp = await connPool.query(
+//         `
+//         SELECT * FROM votes
+//         WHERE poll_id = $1`,
+//         [poll_id]
+//     );
+//     return resp;
+// };
+export const getOptionsWithVotesById = async (poll_uuid: UUID) => {
+    const resp = await connPool.query(
+        `SELECT o.*, COUNT(v.*) AS vote_count FROM options o 
+        LEFT JOIN votes v 
+            ON o.id = v.option_id 
+        WHERE o.poll_id = $1 
+        GROUP BY o.id`,
+        [poll_uuid]
+    );
+    return resp.rows;
 };
