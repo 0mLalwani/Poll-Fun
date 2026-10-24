@@ -8,7 +8,9 @@ const shared = globalThis as typeof globalThis & {
     pollEventListeners?: Map<string, PollListener[]>;
 };
 
-//if our global listener ends up null, make a new map again
+//if our global listener ends up null,
+//make a new map again and attach it to the global object,
+//and put the ref in mp
 const mp = (shared.pollEventListeners ??= new Map());
 
 export function subscribeListeners(pollId: string, listener: PollListener) {
