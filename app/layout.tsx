@@ -31,10 +31,10 @@ export default function RootLayout({
                 geistHeading.variable
             )}
         >
-            <body>
-                {/* <ThemeProvider>
-                    </ThemeProvider> */}
-                <QueryProvider>{children}</QueryProvider>
+            <body className="">
+                <ThemeProvider>
+                    <QueryProvider>{children}</QueryProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

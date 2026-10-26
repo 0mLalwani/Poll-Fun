@@ -92,9 +92,9 @@ export default function Poll({
         return () => source.close();
     }, [poll.id, router]);
 
-    if (expiryMs <= 0) {
-        return;
-    }
+    // if (expiryMs <= 0) {
+    //     return;
+    // }
     return (
         <Card className="max-w-150 border">
             <CardHeader>
