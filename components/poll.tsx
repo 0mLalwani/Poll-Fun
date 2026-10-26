@@ -63,8 +63,10 @@ export default function Poll({
 }) {
     const [errors, setErrors] = useState("");
     const [selectedOptionId, setSelectedOptionId] = useState<UUID>();
-
-    const { optionId, voteId } = getUUIDCookie();
+    const [voteId, setVoteId] = useState({ optionId: "", voteId: "" });
+    useEffect(() => {
+        setVoteId(getUUIDCookie());
+    }, []);
     const today_date = new Date();
     const expiryMs = poll.expires_at.getTime() - today_date.getTime();
 
@@ -108,7 +110,7 @@ export default function Poll({
                     {options.map((option) => {
                         return (
                             <div
-                                className={` ${voteId === option.id && `bg-muted`} flex justify-between ${voteId === option.id && `border`} p-2`}
+                                className={` ${voteId.voteId === option.id && `bg-muted`} flex justify-between ${voteId.voteId === option.id && `border`} p-2`}
                                 key={option.id}
                             >
                                 <div className="flex w-full gap-2 p-2">
