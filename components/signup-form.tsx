@@ -28,7 +28,10 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         const username = String(formdata.get("username"));
 
         const resp = await signUp(username);
-        console.log("FIRSTLY SERVER SIDE USER CREATED AND OPTIONS GENERATED");
+        console.log(
+            "FIRSTLY SERVER SIDE USER CREATED AND OPTIONS GENERATED",
+            resp
+        );
 
         if (typeof resp === "string") {
             setErrors(resp);

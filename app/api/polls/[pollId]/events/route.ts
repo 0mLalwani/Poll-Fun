@@ -68,7 +68,7 @@ export async function GET(
 
             controller.enqueue(encoder.encode(`retry: 15000\n\n`)); // slower reconnects
             tick();
-            interval = setInterval(tick, 5000);
+            interval = setInterval(tick, 8000);
         },
         cancel: cleanup,
     });

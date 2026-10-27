@@ -5,30 +5,25 @@ import {
     getUserById,
 } from "@/lib/dbActions";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const polls = await getPolls();
-    console.log("GOT POLLS FROM DB: ", polls);
+
+    const items = await Promise.all(
+        polls.map(async (poll) => {
+            const [options, user] = await Promise.all([
+                getOptionsWithVotesById(poll.id),
+                getUserById(poll.user_id),
+            ]);
+            return { poll, options, user };
+        })
+    );
 
     return (
         <div className="w-full">
-            {polls.map(async (poll) => {
-                // EACH POLL OBJ LIKE
-                //                  {
-                //     id: 'e489ca49-...',
-                //     title: 'do u...',
-                //     user_id: 'fd4e2a71-...',
-                //     status: 'OPEN',
-                //     created_at: 2026-10-20T15:05:26.929Z,
-                //     expires_at: 2026-10-22T15:05:26.929Z
-                //   }
-                const options = await getOptionsWithVotesById(poll.id);
-                console.log(`GOT OPTIONS FOR ${poll.title} :`, options);
-                // GETTING OPTIONS ARRAY FOR EACH POLL OBJECT
-
-                const user = await getUserById(poll.user_id);
-                console.log("GOT USER:", user);
-
-                return (
+            {items.map(({ poll, options, user }) =>
+                user ? (
                     <Poll
                         key={poll.id}
                         poll={poll}
@@ -36,8 +31,8 @@ export default async function Page() {
                         username={user.username}
                         userId={user.id}
                     />
-                );
-            })}
+                ) : null
+            )}
         </div>
     );
 }

@@ -85,7 +85,7 @@ export default function Poll({
         source.onerror = (e) =>
             console.log("SSE error; connection disrupted?", e);
         source.onmessage = async (e) => {
-            const data = await JSON.parse(e.data);
+            const data = JSON.parse(e.data);
             console.log("SSE EVENT RECEIVED", data.poll);
 
             setOptions(data.poll);
