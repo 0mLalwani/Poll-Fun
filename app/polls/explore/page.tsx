@@ -32,7 +32,7 @@ export default async function Page() {
                     <Poll
                         key={poll.id}
                         poll={poll}
-                        options={options}
+                        got_options={options}
                         username={user.username}
                         userId={user.id}
                     />

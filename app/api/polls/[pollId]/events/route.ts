@@ -1,8 +1,8 @@
 //SSE GET REQ HANDLER
 //1. CREATE SSE STREAM, REGISTER CB TO pollEvents.ts (subscribe())
 
-import { subscribeListeners } from "@/lib/pollEvents";
-export const dynamic = "force-dynamic";
+import { getOptionsWithVotesById } from "@/lib/dbActions";
+
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ pollId: string }> }
@@ -11,27 +11,52 @@ export async function GET(
 
     const { pollId } = await params;
     console.log("POLL ID", pollId);
-
     const encoder = new TextEncoder();
 
-    let unsubscribe = () => {};
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let closed = false;
+    let checking = false;
+
+    const cleanup = () => {
+        if (closed) return;
+        closed = true;
+
+        if (interval) clearInterval(interval);
+
+        req.signal.removeEventListener("abort", cleanup);
+
+        console.log("CLEANUP FN CALLED:", pollId);
+    };
+
     const stream = new ReadableStream({
         start(controller) {
             console.log("SSE STREAM STARTED");
-            controller.enqueue(": connected\n\n");
-
-            const listener = () => {
-                console.log("CALLBACK FIRED:", pollId);
-                controller.enqueue(
-                    encoder.encode(
-                        `event: poll.updated\ndata: ${JSON.stringify({ pollId })}\n\n`
-                    )
-                );
+            const listener = async () => {
+                if (checking || closed) return;
+                checking = true;
+                try {
+                    console.log("CALLBACK FIRED:", pollId);
+                    const poll = await getOptionsWithVotesById(pollId);
+                    if (closed) return;
+                    controller.enqueue(
+                        encoder.encode(`data: ${JSON.stringify({ poll })}\n\n`)
+                    );
+                } catch (err) {
+                    if (!closed) console.error(err);
+                } finally {
+                    checking = false;
+                }
             };
-            unsubscribe = subscribeListeners(pollId, listener);
+            listener();
+
+            interval = setInterval(() => {
+                listener();
+            }, 4500);
+
+            req.signal.addEventListener("abort", cleanup, { once: true });
         },
         cancel() {
-            unsubscribe();
+            cleanup();
         },
     });
     return new Response(stream, {

@@ -2,7 +2,6 @@
 
 import { verifyJWT } from "@/lib/authorization";
 import { getUser, submitVote } from "@/lib/dbActions";
-import { publishEvent } from "@/lib/pollEvents";
 import { cookies } from "next/headers";
 
 export default async function voteService(pollId: string, optionId: string) {
@@ -22,9 +21,4 @@ export default async function voteService(pollId: string, optionId: string) {
     cookieStore.set(`${pollId}`, `${optionId}`);
     const resp = await submitVote(user.id, pollId, optionId);
     console.log("FINALLY CREATING THE VOTE: ", resp);
-
-    // RELEASE A NOTIFICATION TO THE SSE HANDLER with PUBLISH(pollid)
-    if (resp) {
-        publishEvent(pollId);
-    }
 }

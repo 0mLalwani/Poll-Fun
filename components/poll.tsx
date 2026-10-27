@@ -52,12 +52,12 @@ function getUUIDCookie() {
 
 export default function Poll({
     poll,
-    options,
+    got_options,
     username,
     userId,
 }: {
     poll: Poll;
-    options: Option[];
+    got_options: Option[];
     username: string;
     userId: UUID;
 }) {
@@ -77,24 +77,22 @@ export default function Poll({
         }
     };
 
-    const router = useRouter();
+    const [options, setOptions] = useState(got_options);
     useEffect(() => {
         const source = new EventSource(`/api/polls/${poll.id}/events`);
 
         source.onopen = () => console.log("SSE connected; let's go", poll.id);
         source.onerror = (e) =>
             console.log("SSE error; connection disrupted?", e);
-        source.addEventListener("poll.updated", (e) => {
-            console.log("SSE EVENT RECEIVED", e.data);
-            router.refresh();
-        });
+        source.onmessage = async (e) => {
+            const data = await JSON.parse(e.data);
+            console.log("SSE EVENT RECEIVED", data.poll);
 
+            setOptions(data.poll);
+        };
         return () => source.close();
-    }, [poll.id, router]);
+    }, [poll.id]);
 
-    // if (expiryMs <= 0) {
-    //     return;
-    // }
     return (
         <Card className="max-w-150 border">
             <CardHeader>

@@ -97,13 +97,13 @@ export const createPasskey = async (passkey: CredentialModel) => {
     return resp;
 };
 
-export const getPollById = async (poll_uuid: UUID) => {
+export const getPollById = async (poll_uuid: string) => {
     const resp = await connPool.query(
         `
             SELECT * FROM polls WHERE id = $1`,
         [poll_uuid]
     );
-    return resp;
+    return resp.rows[0];
 };
 export const getPolls = async () => {
     const resp = await connPool.query(`SELECT * FROM polls`);
@@ -145,7 +145,7 @@ export const submitVote = async (
 //     );
 //     return resp;
 // };
-export const getOptionsWithVotesById = async (poll_uuid: UUID) => {
+export const getOptionsWithVotesById = async (poll_uuid: string) => {
     const resp = await connPool.query(
         `SELECT o.*, COUNT(v.*) AS vote_count FROM options o 
         LEFT JOIN votes v 
